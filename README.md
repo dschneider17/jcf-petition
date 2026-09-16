@@ -108,3 +108,5 @@ railway variables set SESSION_SECRET=$(node -e "console.log(require('crypto').ra
   publicly.
 - Try submitting a test signature yourself once it's live, then approve it
   from `/admin`, to confirm the full loop works in production.
+
+Redeployed: 2026-09-16T20:32:47Z
