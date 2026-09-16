@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Edit signer &middot; JCF Petition Admin</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <header class="admin-header">
+    <div class="wrap">
+      <strong>JCF Petition &mdash; Admin</strong>
+      <form method="POST" action="/admin/logout">
+        <button type="submit" class="link-btn">Log out</button>
+      </form>
+    </div>
+  </header>
+
+  <div class="wrap admin-wrap" style="max-width:680px;">
+    <p><a href="/admin">&larr; Back to all submissions</a></p>
+    <div class="card">
+      <h2>Edit &mdash; <%= signer.nonprofit_name %></h2>
+      <p class="small-note">
+        Submitted by <%= signer.signer_name %> (<%= signer.signer_role %>), <%= signer.email %>
+        on <%= new Date(signer.created_at).toLocaleString() %>.
+        <% if (signer.website_url) { %> &middot; <a href="<%= signer.website_url %>" target="_blank" rel="noopener">website</a><% } %>
+      </p>
+
+      <form method="POST" action="/admin/signer/<%= signer.id %>">
+        <div class="field">
+          <label for="nonprofit_name">Nonprofit name</label>
+          <input type="text" id="nonprofit_name" name="nonprofit_name" value="<%= signer.nonprofit_name %>" required />
+        </div>
+
+        <div class="field">
+          <label for="blurb">Blurb (shown on the public wall)</label>
+          <textarea id="blurb" name="blurb" required><%= signer.blurb %></textarea>
+        </div>
+
+        <div class="field">
+          <label for="logo_url">Nonprofit logo URL</label>
+          <input type="url" id="logo_url" name="logo_url" placeholder="https://example.org/logo.png" value="<%= signer.logo_url || '' %>" />
+          <p class="small-note">Paste a direct link to an image (PNG/JPG/SVG). Leave blank to show initials.</p>
+        </div>
+
+        <div class="field">
+          <label for="mission_statement">Mission / vision statement (optional, shown on the card)</label>
+          <textarea id="mission_statement" name="mission_statement" placeholder="A short mission or vision statement for this nonprofit."><%= signer.mission_statement || '' %></textarea>
+        </div>
+
+        <div class="field">
+          <label for="admin_note">Internal admin note (never shown publicly)</label>
+          <textarea id="admin_note" name="admin_note" placeholder="Notes for your own tracking &mdash; not public."><%= signer.admin_note || '' %></textarea>
+        </div>
+
+        <div class="field">
+          <label for="status">Status</label>
+          <select id="status" name="status" style="padding:10px; border-radius:8px; border:1px solid var(--border);">
+            <option value="pending" <%= signer.status === 'pending' ? 'selected' : '' %>>Pending</option>
+            <option value="approved" <%= signer.status === 'approved' ? 'selected' : '' %>>Approved (visible on site)</option>
+            <option value="hidden" <%= signer.status === 'hidden' ? 'selected' : '' %>>Hidden</option>
+          </select>
+        </div>
+
+        <button type="submit" class="cta-button">Save changes</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

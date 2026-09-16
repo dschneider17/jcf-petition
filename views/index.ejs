@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nonprofits for JCF Connectivity</title>
+  <meta name="description" content="A growing list of nonprofits who would benefit from Jewish Communal Fund joining DAFpay and connecting to Chariot for gift processing." />
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a href="/" class="brand"><span class="dot"></span> Nonprofits for JCF Connectivity</a>
+      <span class="tagline">A community petition</span>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="wrap">
+      <h1>Jewish Communal Fund is one of the most important DAFs in our sector. We'd love to make giving through it even easier.</h1>
+      <p class="lead">
+        Hundreds of nonprofits have strong relationships with donors who hold funds at Jewish Communal Fund (JCF).
+        Today, JCF isn't yet available for 3-click DAFpay giving, and JCF-issued grants can't yet be linked directly
+        to a nonprofit's Chariot deposit account for gift processing. We think JCF and the nonprofits it serves
+        would both benefit from changing that &mdash; and we wanted to show, in one place, just how many
+        organizations agree.
+      </p>
+      <a href="#sign" class="cta-button">Add your nonprofit's voice</a>
+
+      <div class="stat-row">
+        <div class="stat">
+          <div class="num"><%= counts.total %></div>
+          <div class="label">nonprofits signed</div>
+        </div>
+        <div class="stat">
+          <div class="num"><%= counts.dafpay_count %></div>
+          <div class="label">want DAFpay support</div>
+        </div>
+        <div class="stat">
+          <div class="num"><%= counts.gp_count %></div>
+          <div class="label">want Chariot ACH linkage</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="context">
+    <div class="wrap">
+      <h2>What we're asking for</h2>
+      <p>
+        This isn't a complaint &mdash; it's a signal. We work with JCF because our shared donors and nonprofit
+        partners deserve it, and we think these two changes would make giving smoother for everyone involved.
+      </p>
+      <div class="two-col">
+        <div class="info-card">
+          <h3><span class="badge badge-dafpay">DAFpay</span></h3>
+          <p>
+            Add Jewish Communal Fund as a supported DAF for 3-click giving, so donors can recommend a grant
+            to your organization directly from your donation page &mdash; no extra paperwork, no delay.
+          </p>
+        </div>
+        <div class="info-card">
+          <h3><span class="badge badge-gp">Gift Processing</span></h3>
+          <p>
+            Allow ACH linkage from Jewish Communal Fund to a nonprofit's Chariot deposit account, so JCF
+            grant payments can flow into the same unified deposit and reconciliation record as every other
+            funding source.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="form-section" id="sign">
+    <div class="wrap">
+      <div class="card">
+        <h2>Add your nonprofit to the list</h2>
+        <p style="color:#555; margin-top:-6px; margin-bottom: 22px;">
+          Takes about a minute. Your submission is reviewed before it appears publicly, and your details are
+          only ever used to represent your nonprofit's voice in this effort.
+        </p>
+
+        <% if (submitted) { %>
+          <div class="success-banner">Thank you &mdash; your nonprofit has been added and is pending a quick review before it appears on the list below.</div>
+        <% } %>
+        <% if (error) { %>
+          <div class="error-banner"><%= error %></div>
+        <% } %>
+
+        <form method="POST" action="/sign">
+          <div class="field">
+            <label for="nonprofit_name">Nonprofit name</label>
+            <input type="text" id="nonprofit_name" name="nonprofit_name" required value="<%= formData.nonprofit_name || '' %>" />
+          </div>
+
+          <div class="two-col" style="margin: 0 0 18px;">
+            <div class="field" style="margin-bottom:0;">
+              <label for="signer_name">Your name</label>
+              <input type="text" id="signer_name" name="signer_name" required value="<%= formData.signer_name || '' %>" />
+            </div>
+            <div class="field" style="margin-bottom:0;">
+              <label for="signer_role">Your role</label>
+              <input type="text" id="signer_role" name="signer_role" placeholder="e.g. Director of Development" required value="<%= formData.signer_role || '' %>" />
+            </div>
+          </div>
+
+          <div class="two-col" style="margin: 0 0 18px;">
+            <div class="field" style="margin-bottom:0;">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" required value="<%= formData.email || '' %>" />
+            </div>
+            <div class="field" style="margin-bottom:0;">
+              <label for="website_url">Nonprofit website (optional)</label>
+              <input type="url" id="website_url" name="website_url" placeholder="https://" value="<%= formData.website_url || '' %>" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Which connections matter to your nonprofit?</label>
+            <div class="checkbox-row">
+              <label class="checkbox-option">
+                <input type="checkbox" name="wants_dafpay" <%= formData.wants_dafpay ? 'checked' : '' %> />
+                <span>
+                  <span class="opt-title">DAFpay 3-click giving</span><br />
+                  <span class="opt-desc">We want JCF donors to be able to recommend grants to us instantly through DAFpay.</span>
+                </span>
+              </label>
+              <label class="checkbox-option">
+                <input type="checkbox" name="wants_gift_processing" <%= formData.wants_gift_processing ? 'checked' : '' %> />
+                <span>
+                  <span class="opt-title">Chariot Gift Processing ACH linkage</span><br />
+                  <span class="opt-desc">We use Chariot for gift processing and want JCF grants linked to our deposit account.</span>
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="blurb">Tell us why this matters to your nonprofit</label>
+            <textarea id="blurb" name="blurb" required placeholder="A sentence or two about your mission and why easier JCF connectivity would help."><%= formData.blurb || '' %></textarea>
+          </div>
+
+          <button type="submit" class="cta-button">Sign for my nonprofit</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section class="wall">
+    <div class="wrap">
+      <h2>Nonprofits who've signed</h2>
+      <p class="sub">Organizations that have publicly added their voice to this effort.</p>
+
+      <% if (signers.length === 0) { %>
+        <p class="empty-wall">Be the first nonprofit to sign above.</p>
+      <% } else { %>
+        <div class="signer-grid">
+          <% signers.forEach(function(s) { %>
+            <div class="signer-card">
+              <div class="logo-row">
+                <% if (s.logo_url) { %>
+                  <img class="logo" src="<%= s.logo_url %>" alt="<%= s.nonprofit_name %> logo" />
+                <% } else { %>
+                  <div class="logo-placeholder"><%= s.nonprofit_name.charAt(0).toUpperCase() %></div>
+                <% } %>
+                <div>
+                  <div class="org-name"><%= s.nonprofit_name %></div>
+                  <div>
+                    <% if (s.wants_dafpay) { %><span class="badge badge-dafpay">DAFpay</span><% } %>
+                    <% if (s.wants_gift_processing) { %><span class="badge badge-gp">Gift Processing</span><% } %>
+                  </div>
+                </div>
+              </div>
+              <div class="signer-line"><%= s.signer_name %>, <%= s.signer_role %><% if (s.website_url) { %> &middot; <a href="<%= s.website_url %>" target="_blank" rel="noopener">website</a><% } %></div>
+              <div class="blurb">&ldquo;<%= s.blurb %>&rdquo;</div>
+              <% if (s.mission_statement) { %>
+                <div class="mission"><%= s.mission_statement %></div>
+              <% } %>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      Organized in the spirit of collaboration, not confrontation &mdash; we believe Jewish Communal Fund and
+      the nonprofits it supports both win when giving is simple. Questions? Reach out to
+      <a href="mailto:drew@givechariot.com">drew@givechariot.com</a>.
+    </div>
+  </footer>
+</body>
+</html>

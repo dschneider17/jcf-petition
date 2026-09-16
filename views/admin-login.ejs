@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin login &middot; JCF Petition</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <div class="wrap login-wrap">
+    <div class="card">
+      <h2>Admin login</h2>
+      <% if (error) { %>
+        <div class="error-banner"><%= error %></div>
+      <% } %>
+      <form method="POST" action="/admin/login">
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required autofocus />
+        </div>
+        <button type="submit" class="cta-button">Log in</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
