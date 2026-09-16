@@ -3,24 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin login &middot; JCF Petition</title>
-  <link rel="stylesheet" href="/css/styles.css" />
+  <title>Admin login &middot; JCF Connectivity</title>
+  <link rel="stylesheet" href="/css/colors_and_type.css" />
+  <link rel="stylesheet" href="/css/site.css" />
 </head>
 <body>
-  <div class="wrap login-wrap">
-    <div class="card">
-      <h2>Admin login</h2>
+
+  <div class="admin-login-wrap">
+    <div class="admin-login-card">
+      <div class="admin-mark admin-mark-lg">N</div>
+      <h2>Admin access</h2>
+      <p class="subhead">For the team managing supporter voices.</p>
+
       <% if (error) { %>
         <div class="error-banner"><%= error %></div>
       <% } %>
+
       <form method="POST" action="/admin/login">
-        <div class="field">
+        <div class="admin-login-field">
           <label for="password">Password</label>
-          <input type="password" id="password" name="password" required autofocus />
+          <input type="password" id="password" name="password" placeholder="Enter admin password" required autofocus />
         </div>
-        <button type="submit" class="cta-button">Log in</button>
+        <button type="submit" class="btn btn-glacier btn-block">Log in</button>
       </form>
+
+      <div style="margin-top:24px;">
+        <a href="/" style="color:var(--fg-3); font-size:13px;">&larr; back to public site</a>
+      </div>
     </div>
   </div>
+
 </body>
 </html>

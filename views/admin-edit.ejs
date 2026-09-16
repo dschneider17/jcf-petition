@@ -3,68 +3,99 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Edit signer &middot; JCF Petition Admin</title>
-  <link rel="stylesheet" href="/css/styles.css" />
+  <title>Edit submission &middot; Admin</title>
+  <link rel="stylesheet" href="/css/colors_and_type.css" />
+  <link rel="stylesheet" href="/css/site.css" />
 </head>
 <body>
-  <header class="admin-header">
-    <div class="wrap">
-      <strong>JCF Petition &mdash; Admin</strong>
-      <form method="POST" action="/admin/logout">
-        <button type="submit" class="link-btn">Log out</button>
-      </form>
+
+  <div class="admin-nav" style="max-width:720px;">
+    <div class="admin-nav-left">
+      <div class="admin-mark">N</div>
+      <div class="admin-nav-title">Admin &middot; Edit submission</div>
     </div>
-  </header>
+    <a href="/admin" style="font:500 13px var(--font-sans); color:var(--fg-3);">&larr; back to all submissions</a>
+  </div>
 
-  <div class="wrap admin-wrap" style="max-width:680px;">
-    <p><a href="/admin">&larr; Back to all submissions</a></p>
-    <div class="card">
-      <h2>Edit &mdash; <%= signer.nonprofit_name %></h2>
-      <p class="small-note">
-        Submitted by <%= signer.signer_name %> (<%= signer.signer_role %>), <%= signer.email %>
-        on <%= new Date(signer.created_at).toLocaleString() %>.
-        <% if (signer.website_url) { %> &middot; <a href="<%= signer.website_url %>" target="_blank" rel="noopener">website</a><% } %>
-      </p>
+  <div class="admin-body" style="max-width:720px;">
 
-      <form method="POST" action="/admin/signer/<%= signer.id %>">
-        <div class="field">
-          <label for="nonprofit_name">Nonprofit name</label>
-          <input type="text" id="nonprofit_name" name="nonprofit_name" value="<%= signer.nonprofit_name %>" required />
+    <% if (saved) { %>
+      <div class="success-banner">Changes saved.</div>
+    <% } %>
+
+    <form method="POST" action="/admin/signer/<%= signer.id %>" class="admin-edit-form">
+
+      <div>
+        <label>Type</label>
+        <div class="readonly-field"><%= signer.type === 'donor' ? 'JCF Donor' : 'Nonprofit' %><% if (signer.anonymous) { %> (submitted anonymously)<% } %></div>
+      </div>
+
+      <% if (signer.type === 'donor') { %>
+        <input type="hidden" name="nonprofit_name" value="<%= signer.nonprofit_name || '' %>" />
+        <div>
+          <label for="signer_name">Donor name</label>
+          <input type="text" id="signer_name" name="signer_name" value="<%= signer.signer_name || '' %>" placeholder="Leave blank to show &ldquo;Anonymous&rdquo;" />
         </div>
 
-        <div class="field">
-          <label for="blurb">Blurb (shown on the public wall)</label>
-          <textarea id="blurb" name="blurb" required><%= signer.blurb %></textarea>
-        </div>
-
-        <div class="field">
-          <label for="logo_url">Nonprofit logo URL</label>
-          <input type="url" id="logo_url" name="logo_url" placeholder="https://example.org/logo.png" value="<%= signer.logo_url || '' %>" />
-          <p class="small-note">Paste a direct link to an image (PNG/JPG/SVG). Leave blank to show initials.</p>
-        </div>
-
-        <div class="field">
-          <label for="mission_statement">Mission / vision statement (optional, shown on the card)</label>
-          <textarea id="mission_statement" name="mission_statement" placeholder="A short mission or vision statement for this nonprofit."><%= signer.mission_statement || '' %></textarea>
-        </div>
-
-        <div class="field">
-          <label for="admin_note">Internal admin note (never shown publicly)</label>
-          <textarea id="admin_note" name="admin_note" placeholder="Notes for your own tracking &mdash; not public."><%= signer.admin_note || '' %></textarea>
-        </div>
-
-        <div class="field">
-          <label for="status">Status</label>
-          <select id="status" name="status" style="padding:10px; border-radius:8px; border:1px solid var(--border);">
-            <option value="pending" <%= signer.status === 'pending' ? 'selected' : '' %>>Pending</option>
-            <option value="approved" <%= signer.status === 'approved' ? 'selected' : '' %>>Approved (visible on site)</option>
-            <option value="hidden" <%= signer.status === 'hidden' ? 'selected' : '' %>>Hidden</option>
+        <div>
+          <label for="years_as_account_holder">Years as a JCF account holder</label>
+          <select id="years_as_account_holder" name="years_as_account_holder">
+            <option value="" <%= !signer.years_as_account_holder ? 'selected' : '' %>>&mdash;</option>
+            <% yearsOptions.forEach(function(opt) { %>
+              <option value="<%= opt %>" <%= signer.years_as_account_holder === opt ? 'selected' : '' %>><%= opt %></option>
+            <% }) %>
           </select>
         </div>
+      <% } else { %>
+        <input type="hidden" name="signer_name" value="<%= signer.signer_name || '' %>" />
+        <input type="hidden" name="years_as_account_holder" value="<%= signer.years_as_account_holder || '' %>" />
+        <div>
+          <label for="nonprofit_name">Nonprofit name</label>
+          <input type="text" id="nonprofit_name" name="nonprofit_name" value="<%= signer.nonprofit_name || '' %>" />
+        </div>
 
-        <button type="submit" class="cta-button">Save changes</button>
-      </form>
-    </div>
+        <div>
+          <label>Signer</label>
+          <div class="readonly-field"><%= [signer.signer_name, signer.signer_role].filter(Boolean).join(', ') || '&mdash;' %></div>
+        </div>
+      <% } %>
+
+      <div>
+        <label for="blurb">Blurb (shown as a quote on the public wall)</label>
+        <textarea id="blurb" name="blurb" rows="3"><%= signer.blurb || '' %></textarea>
+      </div>
+
+      <div>
+        <label for="logo_url">Logo image URL</label>
+        <input type="text" id="logo_url" name="logo_url" placeholder="https://..." value="<%= signer.logo_url || '' %>" />
+        <div class="helper">Paste a link to an image. Leave blank to show initials instead.</div>
+      </div>
+
+      <div>
+        <label for="mission_statement">Mission / vision statement (optional)</label>
+        <textarea id="mission_statement" name="mission_statement" rows="3" placeholder="A sentence or two about the mission, shown beneath the quote."><%= signer.mission_statement || '' %></textarea>
+      </div>
+
+      <div class="admin-note-box">
+        <label>Internal admin note <span>&mdash; never shown publicly</span></label>
+        <textarea name="admin_note" rows="2" placeholder="Notes for the admin team only."><%= signer.admin_note || '' %></textarea>
+      </div>
+
+      <div>
+        <label for="status">Status</label>
+        <select id="status" name="status">
+          <option value="pending" <%= signer.status === 'pending' ? 'selected' : '' %>>Pending</option>
+          <option value="approved" <%= signer.status === 'approved' ? 'selected' : '' %>>Approved</option>
+          <option value="hidden" <%= signer.status === 'hidden' ? 'selected' : '' %>>Hidden</option>
+        </select>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-glacier">Save changes</button>
+        <a href="/admin" style="color:var(--fg-3); font:500 14px var(--font-sans);">Cancel</a>
+      </div>
+    </form>
   </div>
+
 </body>
 </html>

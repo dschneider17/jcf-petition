@@ -11,11 +11,11 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
+    "connect-pg-simple": "^9.0.1",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
     "express": "^4.19.2",
     "express-session": "^1.18.0",
-    "connect-pg-simple": "^9.0.1",
-    "pg": "^8.11.5",
-    "ejs": "^3.1.10",
-    "dotenv": "^16.4.5"
+    "pg": "^8.11.5"
   }
 }

@@ -3,76 +3,94 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin &middot; JCF Petition</title>
-  <link rel="stylesheet" href="/css/styles.css" />
+  <title>Admin &middot; Submissions</title>
+  <link rel="stylesheet" href="/css/colors_and_type.css" />
+  <link rel="stylesheet" href="/css/site.css" />
 </head>
 <body>
-  <header class="admin-header">
-    <div class="wrap">
-      <strong>JCF Petition &mdash; Admin</strong>
-      <form method="POST" action="/admin/logout">
-        <button type="submit" class="link-btn">Log out</button>
-      </form>
-    </div>
-  </header>
 
-  <div class="wrap admin-wrap">
-    <div class="filter-tabs">
-      <a href="/admin?status=all" class="<%= filter === 'all' ? 'active' : '' %>">All</a>
-      <a href="/admin?status=pending" class="<%= filter === 'pending' ? 'active' : '' %>">Pending</a>
-      <a href="/admin?status=approved" class="<%= filter === 'approved' ? 'active' : '' %>">Approved</a>
-      <a href="/admin?status=hidden" class="<%= filter === 'hidden' ? 'active' : '' %>">Hidden</a>
+  <div class="admin-nav">
+    <div class="admin-nav-left">
+      <div class="admin-mark">N</div>
+      <div class="admin-nav-title">Admin &middot; Submissions</div>
     </div>
-
-    <table class="admin-table">
-      <thead>
-        <tr>
-          <th>Nonprofit</th>
-          <th>Signer</th>
-          <th>Wants</th>
-          <th>Status</th>
-          <th>Submitted</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% signers.forEach(function(s) { %>
-          <tr>
-            <td><strong><%= s.nonprofit_name %></strong><br/><span style="color:#888;font-size:0.8rem;"><%= s.email %></span></td>
-            <td><%= s.signer_name %><br/><span style="color:#888;font-size:0.8rem;"><%= s.signer_role %></span></td>
-            <td>
-              <% if (s.wants_dafpay) { %><span class="badge badge-dafpay">DAFpay</span><% } %>
-              <% if (s.wants_gift_processing) { %><span class="badge badge-gp">GP</span><% } %>
-            </td>
-            <td><span class="status-pill status-<%= s.status %>"><%= s.status %></span></td>
-            <td style="white-space:nowrap;"><%= new Date(s.created_at).toLocaleDateString() %></td>
-            <td>
-              <div class="row-actions">
-                <a class="btn" href="/admin/signer/<%= s.id %>">Edit</a>
-                <% if (s.status !== 'approved') { %>
-                  <form method="POST" action="/admin/signer/<%= s.id %>/status" style="display:inline;">
-                    <input type="hidden" name="status" value="approved" />
-                    <button type="submit" class="approve">Approve</button>
-                  </form>
-                <% } %>
-                <% if (s.status !== 'hidden') { %>
-                  <form method="POST" action="/admin/signer/<%= s.id %>/status" style="display:inline;">
-                    <input type="hidden" name="status" value="hidden" />
-                    <button type="submit" class="hide">Hide</button>
-                  </form>
-                <% } %>
-                <form method="POST" action="/admin/signer/<%= s.id %>/delete" style="display:inline;" onsubmit="return confirm('Delete this submission permanently?');">
-                  <button type="submit" class="delete">Delete</button>
-                </form>
-              </div>
-            </td>
-          </tr>
-        <% }) %>
-        <% if (signers.length === 0) { %>
-          <tr><td colspan="6" style="color:#888;">No submissions in this filter yet.</td></tr>
-        <% } %>
-      </tbody>
-    </table>
+    <form method="POST" action="/admin/logout">
+      <button type="submit" class="action-link" style="color:var(--fg-3);">Log out</button>
+    </form>
   </div>
+
+  <div class="admin-body">
+    <div class="filter-tabs">
+      <a href="/admin?status=all" class="filter-tab <%= filter === 'all' ? 'active' : '' %>">All &middot; <%= statusCounts.all_count %></a>
+      <a href="/admin?status=pending" class="filter-tab <%= filter === 'pending' ? 'active' : '' %>">Pending &middot; <%= statusCounts.pending_count %></a>
+      <a href="/admin?status=approved" class="filter-tab <%= filter === 'approved' ? 'active' : '' %>">Approved &middot; <%= statusCounts.approved_count %></a>
+      <a href="/admin?status=hidden" class="filter-tab <%= filter === 'hidden' ? 'active' : '' %>">Hidden &middot; <%= statusCounts.hidden_count %></a>
+    </div>
+
+    <div class="admin-table-card">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Nonprofit / Donor</th>
+            <th>Contact</th>
+            <th>Asks</th>
+            <th>Status</th>
+            <th>Submitted</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% rows.forEach(function(s) { %>
+            <tr>
+              <td>
+                <div class="admin-name"><%= s.displayNonprofit %></div>
+                <div class="admin-subtext"><%= s.type === 'donor' ? 'JCF Donor' : 'Nonprofit' %><% if (s.anonymous) { %> &middot; anonymous<% } %></div>
+              </td>
+              <td>
+                <% if (s.type === 'donor') { %>
+                  <div class="admin-subtext"><%= s.years_as_account_holder || '&mdash;' %></div>
+                <% } else { %>
+                  <div><%= s.signer_name || '' %></div>
+                  <div class="admin-subtext"><%= s.signer_role || '' %></div>
+                <% } %>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <% if (s.wants_dafpay) { %><span class="badge badge-dafpay">DAFpay</span><% } %>
+                  <% if (s.wants_gift_processing) { %><span class="badge badge-ach">ACH Linkage</span><% } %>
+                </div>
+              </td>
+              <td><span class="status-pill status-<%= s.status %>"><%= s.status %></span></td>
+              <td class="admin-subtext" style="white-space:nowrap;"><%= new Date(s.created_at).toLocaleDateString() %></td>
+              <td>
+                <div class="row-actions">
+                  <a class="action-link action-edit" href="/admin/signer/<%= s.id %>">Edit</a>
+                  <% if (s.canApprove) { %>
+                    <form method="POST" action="/admin/signer/<%= s.id %>/status" style="display:inline;">
+                      <input type="hidden" name="status" value="approved" />
+                      <button type="submit" class="action-link action-approve">Approve</button>
+                    </form>
+                  <% } %>
+                  <% if (s.canHide) { %>
+                    <form method="POST" action="/admin/signer/<%= s.id %>/status" style="display:inline;">
+                      <input type="hidden" name="status" value="hidden" />
+                      <button type="submit" class="action-link action-hide">Hide</button>
+                    </form>
+                  <% } %>
+                  <form method="POST" action="/admin/signer/<%= s.id %>/delete" style="display:inline;" onsubmit="return confirm('Delete this submission permanently?');">
+                    <button type="submit" class="action-link action-delete">Delete</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+          <% if (rows.length === 0) { %>
+            <tr><td colspan="6" class="admin-subtext">No submissions in this filter yet.</td></tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 </body>
 </html>

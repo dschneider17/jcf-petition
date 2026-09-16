@@ -1,0 +1,210 @@
+/* =============================================================
+   Chariot Design System — Colors & Type
+   Primary typeface: Brut Grotesque (the ONLY custom face).
+   Fallback: Open Sans — used only where Brut can't be shipped
+   (Google Slides/Docs, shared environments).
+   ============================================================= */
+
+/* ---------- Web fonts ---------- */
+
+@font-face {
+  font-family: "Brut Grotesque";
+  src: url("./fonts/BrutGrotesque-Light.otf") format("opentype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Brut Grotesque";
+  src: url("./fonts/BrutGrotesque-Book.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Brut Grotesque";
+  src: url("./fonts/BrutGrotesque-Regular.otf") format("opentype");
+  font-weight: 450;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Brut Grotesque";
+  src: url("./fonts/BrutGrotesque-Medium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Brut Grotesque";
+  src: url("./fonts/BrutGrotesque-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Brut Grotesque";
+  src: url("./fonts/BrutGrotesque-Black.otf") format("opentype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Brut Grotesque";
+  src: url("./fonts/BrutGrotesque-Italic.otf") format("opentype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Brut Grotesque";
+  src: url("./fonts/BrutGrotesque-BoldItalic.otf") format("opentype");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Brut Grotesque is the entire type system. No secondary face. */
+
+:root {
+  /* ---------- PRIMARY PALETTE ---------- */
+  --chariot-white:     #FFFFFF;
+  --chariot-navy:      #062949;   /* primary brand navy */
+  --chariot-navy-soft: #072A49;   /* panel surface on midnight — a half-step lighter navy */
+  --chariot-midnight:  #051A2E;   /* deepest navy, body/dark surface */
+  --chariot-glacier:   #209AE5;   /* primary accent blue */
+  --chariot-sky:       #6DC7FF;   /* light accent blue */
+
+  /* ---------- SECONDARY (expressive) — canonical values from brand swatches ---------- */
+  --chariot-rose:       #FE9BCA;   /* soft pink */
+  --chariot-fuschia:    #DF3D99;   /* hot pink */
+  --chariot-plum:       #4F1231;   /* deep plum (wine) */
+  --chariot-blackcurrant:#341346;  /* near-black purple */
+  --chariot-lilac:      #B28FEB;   /* soft purple */
+  --chariot-bluebell:   #7143CC;   /* vivid purple */
+  --chariot-root:       #2B320B;   /* deep olive */
+
+  --chariot-lime:       #D0F67E;   /* light yellow-green */
+  --chariot-mint:       #A3F5A4;   /* soft mint — used as section markers */
+  --chariot-moss:       #BDD843;   /* chartreuse */
+  --chariot-forest:     #013C10;   /* dark forest */
+  --chariot-pine:       #35C672;   /* bright pine */
+
+  /* ---------- TERTIARY — creams (light neutral surfaces) ---------- */
+  --chariot-cream-25:  #EFEEEC;
+  --chariot-cream-50:  #EFECE6;
+  --chariot-cream-75:  #E9E5DD;
+  --chariot-cream-100: #E1DCD2;
+
+  /* ---------- NEUTRAL GREYS ---------- */
+  --chariot-grey-10:   #F0F0F0;
+  --chariot-grey-20:   #E6E7E8;
+  --chariot-grey-30:   #CDD4DB;
+  --chariot-black:     #000000;
+
+  /* ---------- SEMANTIC ROLES ---------- */
+  --fg-1:       var(--chariot-navy);       /* primary text on light */
+  --fg-2:       rgba(7, 41, 73, 0.85);     /* secondary text */
+  --fg-3:       rgba(7, 41, 73, 0.60);     /* tertiary/muted */
+  --fg-on-dark: var(--chariot-white);
+  --fg-on-dark-2: rgba(255, 255, 255, 0.70);
+  --fg-accent:  var(--chariot-glacier);
+  --fg-warn:    var(--chariot-rose);
+
+  --bg-page:    var(--chariot-cream-50);    /* default warm light page */
+  --bg-surface: var(--chariot-white);
+  --bg-dark:    var(--chariot-navy);
+  --bg-deep:    var(--chariot-midnight);
+
+  --border-soft:  rgba(7, 41, 73, 0.12);
+  --border-dark:  rgba(255, 255, 255, 0.12);
+
+  /* ---------- TYPE FAMILIES ---------- */
+  --font-sans:    "Brut Grotesque", "Open Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Brut Grotesque", "Open Sans", system-ui, sans-serif;
+  /* Small labels use Brut Grotesque Medium at 11–12px — there is no mono face */
+  --font-label:   "Brut Grotesque", "Open Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-fallback: "Open Sans", system-ui, sans-serif; /* only when Brut can't be shipped */
+
+  /* ---------- TYPE TOKENS ---------- */
+  /* Display — bold, tight, slightly negative tracking */
+  --type-display-1: 700 clamp(60px, 8vw, 100px) / 1.00 var(--font-display);
+  --type-display-2: 700 clamp(44px, 5.5vw, 64px) / 1.02 var(--font-display);
+  --type-h1:        700 clamp(32px, 3.2vw, 44px) / 1.05 var(--font-display);
+  --type-h2:        700 28px/1.1 var(--font-display);
+  --type-h3:        500 22px/1.15 var(--font-display);
+  --type-lead:      400 18px/1.45 var(--font-sans);
+  --type-body:      400 16px/1.5 var(--font-sans);
+  --type-small:     400 14px/1.5 var(--font-sans);
+  --type-caption:   500 12px/1.4 var(--font-sans);
+  --type-eyebrow:   500 12px/1.2 var(--font-label);    /* section numbers, tags — Brut Grotesque Medium */
+  --type-label-sm:  500 12px/1.4 var(--font-label);
+
+  --tracking-tight: -0.02em;
+  --tracking-tighter: -0.04em;
+
+  /* ---------- SPACING ---------- */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  /* ---------- RADII ---------- */
+  --radius-sm: 4px;
+  --radius-md: 6px;      /* default card + marketing CTA button radius */
+  --radius-card: 10px;   /* inset white card on cream (social/promo frames) */
+  --radius-lg: 12px;
+  --radius-bio: 18px;    /* headshot / bio tiles */
+  --radius-xl: 20px;     /* web-nav pill, burger */
+  --radius-pill: 999px;  /* web-nav buttons & tags ONLY */
+
+  /* ---------- ELEVATION ---------- */
+  --shadow-soft: 0 1px 2px rgba(5, 26, 46, 0.06), 0 8px 24px rgba(5, 26, 46, 0.06);
+  --shadow-pop:  0 8px 32px rgba(5, 26, 46, 0.12);
+  --shadow-deep: 0 24px 64px rgba(5, 26, 46, 0.18);
+
+  /* ---------- MOTION ---------- */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);     /* @kind other */
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);  /* @kind other */
+  --dur-xs: 120ms;   /* @kind other */
+  --dur-sm: 200ms;   /* @kind other */
+  --dur-md: 320ms;   /* @kind other */
+  --dur-lg: 600ms;   /* @kind other */
+}
+
+/* ---------- Semantic element defaults ---------- */
+
+html, body {
+  font: var(--type-body);
+  color: var(--fg-1);
+  background: var(--bg-page);
+  letter-spacing: var(--tracking-tight);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1 { font: var(--type-h1); letter-spacing: var(--tracking-tight); margin: 0 0 0.4em; }
+h2 { font: var(--type-h2); letter-spacing: var(--tracking-tight); margin: 0 0 0.4em; }
+h3 { font: var(--type-h3); letter-spacing: var(--tracking-tight); margin: 0 0 0.4em; }
+p  { font: var(--type-body); margin: 0 0 1em; text-wrap: pretty; }
+small { font: var(--type-small); color: var(--fg-2); }
+code, pre, kbd, samp { font: var(--type-label-sm); }
+
+.eyebrow {
+  font: var(--type-eyebrow);
+  letter-spacing: 0.02em;
+  text-transform: none; /* Chariot keeps eyebrow lowercase/numeric like "6.1" */
+  color: var(--fg-3);
+}
+
+.display-1 { font: var(--type-display-1); letter-spacing: var(--tracking-tight); }
+.display-2 { font: var(--type-display-2); letter-spacing: var(--tracking-tight); }
+.lead      { font: var(--type-lead); color: var(--fg-2); }

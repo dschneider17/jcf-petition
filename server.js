@@ -10,6 +10,8 @@ const PORT = process.env.PORT || 3000;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'changeme';
 const SESSION_SECRET = process.env.SESSION_SECRET || 'dev-secret-change-in-production';
 
+const YEARS_OPTIONS = ['Less than 1 year', '1-5 years', '5-10 years', 'Greater than 10 years'];
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.urlencoded({ extended: true }));
@@ -30,27 +32,96 @@ function requireAdmin(req, res, next) {
   return res.redirect('/admin/login');
 }
 
+// ---------- Presentation helpers (mirror the design's card logic) ----------
+
+function initialsFor(s) {
+  if (s.anonymous) return 'A';
+  const base = s.type === 'donor' ? s.signer_name : s.nonprofit_name;
+  return (base || '?').trim().charAt(0).toUpperCase() || '?';
+}
+
+function displayNameFor(s) {
+  if (s.anonymous) return 'Anonymous';
+  return (s.type === 'donor' ? s.signer_name : s.nonprofit_name) || '';
+}
+
+function displaySubtitleFor(s) {
+  if (s.anonymous) return '';
+  if (s.type === 'donor') {
+    return s.years_as_account_holder ? `${s.years_as_account_holder} as a JCF account holder` : 'JCF account holder';
+  }
+  return [s.signer_name, s.signer_role].filter(Boolean).join(', ');
+}
+
+function presentSigner(s) {
+  return {
+    ...s,
+    initials: initialsFor(s),
+    displayName: displayNameFor(s),
+    displaySubtitle: displaySubtitleFor(s),
+    isDonorType: s.type === 'donor',
+    isNonprofitType: s.type !== 'donor',
+  };
+}
+
+// Counts shown on the sign-form stat box and the Voices Wall.
+async function getCounts() {
+  const result = await pool.query(`
+    SELECT
+      COUNT(*) FILTER (WHERE status IN ('approved','pending') AND type = 'nonprofit') AS nonprofit_count,
+      COUNT(*) FILTER (WHERE status IN ('approved','pending') AND type = 'donor') AS donor_count,
+      COUNT(*) FILTER (WHERE status IN ('approved','pending')) AS total_count,
+      COUNT(*) FILTER (WHERE status IN ('approved','pending') AND wants_dafpay) AS dafpay_count,
+      COUNT(*) FILTER (WHERE status IN ('approved','pending') AND wants_gift_processing) AS gp_count
+    FROM signers
+  `);
+  return result.rows[0];
+}
+
+// The "Masbia, Yeshiva University & 45 others" caption + avatar chips on the sign card.
+function buildAvatarStack(approvedSigners) {
+  const named = approvedSigners.filter((s) => !s.anonymous && s.displayName);
+  const chips = named.slice(0, 4).map((s) => s.initials);
+  const firstTwoNames = named.slice(0, 2).map((s) => s.displayName);
+  const remaining = approvedSigners.length - firstTwoNames.length;
+  let caption = '';
+  if (firstTwoNames.length === 0) {
+    caption = approvedSigners.length > 0 ? `${approvedSigners.length} voices so far` : 'Be the first to add your voice';
+  } else if (remaining > 0) {
+    caption = `${firstTwoNames.join(', ')} & ${remaining} others`;
+  } else {
+    caption = firstTwoNames.join(', ');
+  }
+  return { chips, caption };
+}
+
+async function getHomeLocals(overrides = {}) {
+  const [approvedResult, countsRow] = await Promise.all([
+    pool.query(`SELECT * FROM signers WHERE status = 'approved' ORDER BY created_at DESC`),
+    getCounts(),
+  ]);
+  const approved = approvedResult.rows.map(presentSigner);
+  const { chips, caption } = buildAvatarStack(approved);
+
+  return {
+    teaserSigners: approved.slice(0, 5),
+    counts: countsRow,
+    avatarChips: chips,
+    avatarCaption: caption,
+    error: null,
+    formData: {},
+    role: 'nonprofit',
+    submitted: false,
+    ...overrides,
+  };
+}
+
 // ---------- Public site ----------
 
 app.get('/', async (req, res, next) => {
   try {
-    const approvedResult = await pool.query(
-      `SELECT * FROM signers WHERE status = 'approved' ORDER BY created_at DESC`
-    );
-    const countsResult = await pool.query(`
-      SELECT
-        COUNT(*) FILTER (WHERE status IN ('approved','pending')) AS total,
-        COUNT(*) FILTER (WHERE status IN ('approved','pending') AND wants_dafpay) AS dafpay_count,
-        COUNT(*) FILTER (WHERE status IN ('approved','pending') AND wants_gift_processing) AS gp_count
-      FROM signers
-    `);
-    res.render('index', {
-      signers: approvedResult.rows,
-      counts: countsResult.rows[0],
-      submitted: req.query.submitted === '1',
-      error: null,
-      formData: {},
-    });
+    const locals = await getHomeLocals({ submitted: req.query.submitted === '1' });
+    res.render('index', locals);
   } catch (err) {
     next(err);
   }
@@ -58,66 +129,68 @@ app.get('/', async (req, res, next) => {
 
 app.post('/sign', async (req, res, next) => {
   try {
-    const {
-      nonprofit_name,
-      signer_name,
-      signer_role,
-      email,
-      blurb,
-      website_url,
-    } = req.body;
+    const role = req.body.role === 'donor' ? 'donor' : 'nonprofit';
+    const anonymous = req.body.anonymous === 'on';
 
-    const wants_dafpay = req.body.wants_dafpay === 'on';
-    const wants_gift_processing = req.body.wants_gift_processing === 'on';
+    const nonprofit_name = (req.body.nonprofit_name || '').trim();
+    const signer_name = (req.body.signer_name || '').trim();
+    const signer_role = (req.body.signer_role || '').trim();
+    const years_as_account_holder = (req.body.years_as_account_holder || '').trim();
+    const blurb = (req.body.why || '').trim();
+    const wants_gift_processing = role === 'nonprofit' && req.body.wants_gift_processing === 'on';
+    let wants_dafpay = role === 'donor' ? true : req.body.wants_dafpay === 'on';
 
-    if (!nonprofit_name || !signer_name || !signer_role || !email || !blurb) {
-      const approvedResult = await pool.query(
-        `SELECT * FROM signers WHERE status = 'approved' ORDER BY created_at DESC`
-      );
-      const countsResult = await pool.query(`
-        SELECT
-          COUNT(*) FILTER (WHERE status IN ('approved','pending')) AS total,
-          COUNT(*) FILTER (WHERE status IN ('approved','pending') AND wants_dafpay) AS dafpay_count,
-          COUNT(*) FILTER (WHERE status IN ('approved','pending') AND wants_gift_processing) AS gp_count
-        FROM signers
-      `);
-      return res.status(400).render('index', {
-        signers: approvedResult.rows,
-        counts: countsResult.rows[0],
-        submitted: false,
-        error: 'Please fill in every field, and check at least one box.',
-        formData: req.body,
-      });
+    let error = null;
+    if (!anonymous) {
+      if (role === 'donor') {
+        if (!signer_name || !years_as_account_holder || !blurb) {
+          error = "Please add your name, how long you've been a JCF account holder, and a comment.";
+        }
+      } else {
+        if (!nonprofit_name || !signer_name || !signer_role || !blurb) {
+          error = 'Please fill in every field, and check at least one box.';
+        } else if (!wants_dafpay && !wants_gift_processing) {
+          error = 'Please check at least one box for which connection matters to you.';
+        }
+      }
     }
 
-    if (!wants_dafpay && !wants_gift_processing) {
-      const approvedResult = await pool.query(
-        `SELECT * FROM signers WHERE status = 'approved' ORDER BY created_at DESC`
-      );
-      const countsResult = await pool.query(`
-        SELECT
-          COUNT(*) FILTER (WHERE status IN ('approved','pending')) AS total,
-          COUNT(*) FILTER (WHERE status IN ('approved','pending') AND wants_dafpay) AS dafpay_count,
-          COUNT(*) FILTER (WHERE status IN ('approved','pending') AND wants_gift_processing) AS gp_count
-        FROM signers
-      `);
-      return res.status(400).render('index', {
-        signers: approvedResult.rows,
-        counts: countsResult.rows[0],
-        submitted: false,
-        error: 'Please check at least one box for which connection matters to you.',
-        formData: req.body,
-      });
+    if (error) {
+      const locals = await getHomeLocals({ error, role, formData: req.body });
+      return res.status(400).render('index', locals);
     }
 
     await pool.query(
       `INSERT INTO signers
-        (nonprofit_name, signer_name, signer_role, email, blurb, website_url, wants_dafpay, wants_gift_processing, status)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'pending')`,
-      [nonprofit_name.trim(), signer_name.trim(), signer_role.trim(), email.trim(), blurb.trim(), (website_url || '').trim(), wants_dafpay, wants_gift_processing]
+        (nonprofit_name, signer_name, signer_role, blurb, wants_dafpay, wants_gift_processing, status, type, anonymous, years_as_account_holder)
+       VALUES ($1,$2,$3,$4,$5,$6,'pending',$7,$8,$9)`,
+      [
+        anonymous ? null : nonprofit_name || null,
+        anonymous ? null : signer_name || null,
+        anonymous || role === 'donor' ? null : signer_role || null,
+        blurb || null,
+        wants_dafpay,
+        wants_gift_processing,
+        role,
+        anonymous,
+        role === 'donor' ? years_as_account_holder || null : null,
+      ]
     );
 
     res.redirect('/?submitted=1');
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get('/voices', async (req, res, next) => {
+  try {
+    const [approvedResult, countsRow] = await Promise.all([
+      pool.query(`SELECT * FROM signers WHERE status = 'approved' ORDER BY created_at DESC`),
+      getCounts(),
+    ]);
+    const approvedSigners = approvedResult.rows.map(presentSigner);
+    res.render('voices', { approvedSigners, counts: countsRow });
   } catch (err) {
     next(err);
   }
@@ -145,15 +218,29 @@ app.post('/admin/logout', (req, res) => {
 app.get('/admin', requireAdmin, async (req, res, next) => {
   try {
     const filter = req.query.status || 'all';
-    let query = 'SELECT * FROM signers';
-    const params = [];
-    if (['pending', 'approved', 'hidden'].includes(filter)) {
-      query += ' WHERE status = $1';
-      params.push(filter);
-    }
-    query += ' ORDER BY created_at DESC';
-    const result = await pool.query(query, params);
-    res.render('admin-dashboard', { signers: result.rows, filter });
+    const [allResult, countsResult] = await Promise.all([
+      pool.query('SELECT * FROM signers ORDER BY created_at DESC'),
+      pool.query(`
+        SELECT
+          COUNT(*) AS all_count,
+          COUNT(*) FILTER (WHERE status = 'pending') AS pending_count,
+          COUNT(*) FILTER (WHERE status = 'approved') AS approved_count,
+          COUNT(*) FILTER (WHERE status = 'hidden') AS hidden_count
+        FROM signers
+      `),
+    ]);
+    const all = allResult.rows;
+    const visible = filter === 'all' ? all : all.filter((s) => s.status === filter);
+    const rows = visible.map((s) => ({
+      ...s,
+      isPending: s.status === 'pending',
+      isApproved: s.status === 'approved',
+      isHidden: s.status === 'hidden',
+      canApprove: s.status !== 'approved',
+      canHide: s.status !== 'hidden',
+      displayNonprofit: s.type === 'donor' ? s.signer_name || 'Anonymous donor' : s.nonprofit_name || 'Anonymous',
+    }));
+    res.render('admin-dashboard', { rows, filter, statusCounts: countsResult.rows[0] });
   } catch (err) {
     next(err);
   }
@@ -163,7 +250,7 @@ app.get('/admin/signer/:id', requireAdmin, async (req, res, next) => {
   try {
     const result = await pool.query('SELECT * FROM signers WHERE id = $1', [req.params.id]);
     if (result.rows.length === 0) return res.redirect('/admin');
-    res.render('admin-edit', { signer: result.rows[0] });
+    res.render('admin-edit', { signer: result.rows[0], saved: req.query.saved === '1', yearsOptions: YEARS_OPTIONS });
   } catch (err) {
     next(err);
   }
@@ -171,7 +258,16 @@ app.get('/admin/signer/:id', requireAdmin, async (req, res, next) => {
 
 app.post('/admin/signer/:id', requireAdmin, async (req, res, next) => {
   try {
-    const { logo_url, mission_statement, admin_note, status, nonprofit_name, blurb } = req.body;
+    const {
+      logo_url,
+      mission_statement,
+      admin_note,
+      status,
+      nonprofit_name,
+      signer_name,
+      blurb,
+      years_as_account_holder,
+    } = req.body;
     await pool.query(
       `UPDATE signers SET
         logo_url = $1,
@@ -179,20 +275,24 @@ app.post('/admin/signer/:id', requireAdmin, async (req, res, next) => {
         admin_note = $3,
         status = $4,
         nonprofit_name = $5,
-        blurb = $6,
+        signer_name = $6,
+        blurb = $7,
+        years_as_account_holder = $8,
         updated_at = now()
-       WHERE id = $7`,
+       WHERE id = $9`,
       [
         (logo_url || '').trim() || null,
         (mission_statement || '').trim() || null,
         (admin_note || '').trim() || null,
         status,
-        nonprofit_name,
-        blurb,
+        (nonprofit_name || '').trim() || null,
+        (signer_name || '').trim() || null,
+        (blurb || '').trim() || null,
+        (years_as_account_holder || '').trim() || null,
         req.params.id,
       ]
     );
-    res.redirect('/admin');
+    res.redirect(`/admin/signer/${req.params.id}?saved=1`);
   } catch (err) {
     next(err);
   }
@@ -228,7 +328,7 @@ app.use((err, req, res, next) => {
 
 initSchema()
   .then(() => {
-    app.listen(PORT, () => console.log(`JCF petition site listening on port ${PORT}`));
+    app.listen(PORT, () => console.log(`JCF Connectivity site listening on port ${PORT}`));
   })
   .catch((err) => {
     console.error('Failed to initialize database schema:', err);
