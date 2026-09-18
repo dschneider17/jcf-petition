@@ -27,7 +27,7 @@
 
       <div>
         <label>Type</label>
-        <div class="readonly-field"><%= signer.type === 'donor' ? 'JCF Donor' : 'Nonprofit' %><% if (signer.anonymous) { %> (submitted anonymously)<% } %></div>
+        <div class="readonly-field"><%= signer.type === 'donor' ? 'JCF Donor (legacy — no longer collected)' : 'Nonprofit' %><% if (signer.anonymous) { %> (submitted anonymously)<% } %></div>
       </div>
 
       <% if (signer.type === 'donor') { %>

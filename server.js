@@ -10,8 +10,6 @@ const PORT = process.env.PORT || 3000;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'changeme';
 const SESSION_SECRET = process.env.SESSION_SECRET || 'dev-secret-change-in-production';
 
-const YEARS_OPTIONS = ['Less than 1 year', '1-5 years', '5-10 years', 'Greater than 10 years'];
-
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.urlencoded({ extended: true }));
@@ -33,23 +31,25 @@ function requireAdmin(req, res, next) {
 }
 
 // ---------- Presentation helpers (mirror the design's card logic) ----------
+//
+// The app now only collects nonprofit signers asking for ACH linkage to a
+// Chariot deposit account. Historical donor / DAFpay rows (from before the
+// 2026-09 simplification) are left in the database untouched, but are
+// excluded from these public-facing queries — see `pre-simplification-donor-dafpay`
+// git tag/branch to bring that flow back if needed.
 
 function initialsFor(s) {
   if (s.anonymous) return 'A';
-  const base = s.type === 'donor' ? s.signer_name : s.nonprofit_name;
-  return (base || '?').trim().charAt(0).toUpperCase() || '?';
+  return (s.nonprofit_name || '?').trim().charAt(0).toUpperCase() || '?';
 }
 
 function displayNameFor(s) {
   if (s.anonymous) return 'Anonymous';
-  return (s.type === 'donor' ? s.signer_name : s.nonprofit_name) || '';
+  return s.nonprofit_name || '';
 }
 
 function displaySubtitleFor(s) {
   if (s.anonymous) return '';
-  if (s.type === 'donor') {
-    return s.years_as_account_holder ? `${s.years_as_account_holder} as a JCF account holder` : 'JCF account holder';
-  }
   return [s.signer_name, s.signer_role].filter(Boolean).join(', ');
 }
 
@@ -59,8 +59,6 @@ function presentSigner(s) {
     initials: initialsFor(s),
     displayName: displayNameFor(s),
     displaySubtitle: displaySubtitleFor(s),
-    isDonorType: s.type === 'donor',
-    isNonprofitType: s.type !== 'donor',
   };
 }
 
@@ -68,11 +66,7 @@ function presentSigner(s) {
 async function getCounts() {
   const result = await pool.query(`
     SELECT
-      COUNT(*) FILTER (WHERE status IN ('approved','pending') AND type = 'nonprofit') AS nonprofit_count,
-      COUNT(*) FILTER (WHERE status IN ('approved','pending') AND type = 'donor') AS donor_count,
-      COUNT(*) FILTER (WHERE status IN ('approved','pending')) AS total_count,
-      COUNT(*) FILTER (WHERE status IN ('approved','pending') AND wants_dafpay) AS dafpay_count,
-      COUNT(*) FILTER (WHERE status IN ('approved','pending') AND wants_gift_processing) AS gp_count
+      COUNT(*) FILTER (WHERE status IN ('approved','pending') AND type = 'nonprofit') AS total_count
     FROM signers
   `);
   return result.rows[0];
@@ -97,7 +91,7 @@ function buildAvatarStack(approvedSigners) {
 
 async function getHomeLocals(overrides = {}) {
   const [approvedResult, countsRow] = await Promise.all([
-    pool.query(`SELECT * FROM signers WHERE status = 'approved' ORDER BY created_at DESC`),
+    pool.query(`SELECT * FROM signers WHERE status = 'approved' AND type = 'nonprofit' ORDER BY created_at DESC`),
     getCounts(),
   ]);
   const approved = approvedResult.rows.map(presentSigner);
@@ -110,7 +104,6 @@ async function getHomeLocals(overrides = {}) {
     avatarCaption: caption,
     error: null,
     formData: {},
-    role: 'nonprofit',
     submitted: false,
     ...overrides,
   };
@@ -129,51 +122,35 @@ app.get('/', async (req, res, next) => {
 
 app.post('/sign', async (req, res, next) => {
   try {
-    const role = req.body.role === 'donor' ? 'donor' : 'nonprofit';
     const anonymous = req.body.anonymous === 'on';
 
     const nonprofit_name = (req.body.nonprofit_name || '').trim();
     const signer_name = (req.body.signer_name || '').trim();
     const signer_role = (req.body.signer_role || '').trim();
-    const years_as_account_holder = (req.body.years_as_account_holder || '').trim();
     const blurb = (req.body.why || '').trim();
-    const wants_gift_processing = role === 'nonprofit' && req.body.wants_gift_processing === 'on';
-    let wants_dafpay = role === 'donor' ? true : req.body.wants_dafpay === 'on';
 
     let error = null;
     if (!anonymous) {
-      if (role === 'donor') {
-        if (!signer_name || !years_as_account_holder || !blurb) {
-          error = "Please add your name, how long you've been a JCF account holder, and a comment.";
-        }
-      } else {
-        if (!nonprofit_name || !signer_name || !signer_role || !blurb) {
-          error = 'Please fill in every field, and check at least one box.';
-        } else if (!wants_dafpay && !wants_gift_processing) {
-          error = 'Please check at least one box for which connection matters to you.';
-        }
+      if (!nonprofit_name || !signer_name || !signer_role || !blurb) {
+        error = 'Please fill in every field.';
       }
     }
 
     if (error) {
-      const locals = await getHomeLocals({ error, role, formData: req.body });
+      const locals = await getHomeLocals({ error, formData: req.body });
       return res.status(400).render('index', locals);
     }
 
     await pool.query(
       `INSERT INTO signers
-        (nonprofit_name, signer_name, signer_role, blurb, wants_dafpay, wants_gift_processing, status, type, anonymous, years_as_account_holder)
-       VALUES ($1,$2,$3,$4,$5,$6,'pending',$7,$8,$9)`,
+        (nonprofit_name, signer_name, signer_role, blurb, wants_dafpay, wants_gift_processing, status, type, anonymous)
+       VALUES ($1,$2,$3,$4,false,true,'pending','nonprofit',$5)`,
       [
         anonymous ? null : nonprofit_name || null,
         anonymous ? null : signer_name || null,
-        anonymous || role === 'donor' ? null : signer_role || null,
+        anonymous ? null : signer_role || null,
         blurb || null,
-        wants_dafpay,
-        wants_gift_processing,
-        role,
         anonymous,
-        role === 'donor' ? years_as_account_holder || null : null,
       ]
     );
 
@@ -186,7 +163,7 @@ app.post('/sign', async (req, res, next) => {
 app.get('/voices', async (req, res, next) => {
   try {
     const [approvedResult, countsRow] = await Promise.all([
-      pool.query(`SELECT * FROM signers WHERE status = 'approved' ORDER BY created_at DESC`),
+      pool.query(`SELECT * FROM signers WHERE status = 'approved' AND type = 'nonprofit' ORDER BY created_at DESC`),
       getCounts(),
     ]);
     const approvedSigners = approvedResult.rows.map(presentSigner);
@@ -250,7 +227,7 @@ app.get('/admin/signer/:id', requireAdmin, async (req, res, next) => {
   try {
     const result = await pool.query('SELECT * FROM signers WHERE id = $1', [req.params.id]);
     if (result.rows.length === 0) return res.redirect('/admin');
-    res.render('admin-edit', { signer: result.rows[0], saved: req.query.saved === '1', yearsOptions: YEARS_OPTIONS });
+    res.render('admin-edit', { signer: result.rows[0], saved: req.query.saved === '1' });
   } catch (err) {
     next(err);
   }

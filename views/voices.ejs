@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Voices for JCF Connectivity</title>
-  <meta name="description" content="Every nonprofit and donor voice asking Jewish Communal Fund to support DAFpay and Chariot Gift Processing ACH linkage." />
+  <meta name="description" content="Every nonprofit voice asking Jewish Communal Fund to support Chariot Gift Processing ACH linkage." />
   <link rel="stylesheet" href="/css/colors_and_type.css" />
   <link rel="stylesheet" href="/css/site.css" />
 </head>
@@ -21,20 +21,8 @@
   <div class="wrap">
     <div class="stat-row">
       <div class="stat-tile">
-        <div class="num"><%= counts.nonprofit_count %></div>
+        <div class="num"><%= counts.total_count %></div>
         <div class="label">nonprofits signed</div>
-      </div>
-      <div class="stat-tile">
-        <div class="num"><%= counts.donor_count %></div>
-        <div class="label">donors signed</div>
-      </div>
-      <div class="stat-tile">
-        <div class="num"><%= counts.dafpay_count %></div>
-        <div class="label">want DAFpay</div>
-      </div>
-      <div class="stat-tile">
-        <div class="num"><%= counts.gp_count %></div>
-        <div class="label">want ACH linkage</div>
       </div>
     </div>
 
@@ -45,10 +33,7 @@
         <% approvedSigners.forEach(function(s) { %>
           <div class="voice-card">
             <div class="voice-badges">
-              <% if (s.isDonorType) { %><span class="badge badge-donor">JCF Donor</span><% } %>
-              <% if (s.isNonprofitType) { %><span class="badge badge-nonprofit">Nonprofit</span><% } %>
-              <% if (s.wants_dafpay) { %><span class="badge badge-dafpay">DAFpay</span><% } %>
-              <% if (s.wants_gift_processing) { %><span class="badge badge-ach">ACH Linkage</span><% } %>
+              <span class="badge badge-ach">ACH Linkage</span>
             </div>
             <p class="voice-quote">&ldquo;<%= s.blurb %>&rdquo;</p>
             <% if (s.mission_statement) { %>
@@ -79,8 +64,8 @@
   <div class="site-footer no-margin">
     <div class="site-footer-inner">
       <div>
-        <div class="site-footer-title">Nonprofits and Donors for JCF Connectivity</div>
-        <div class="site-footer-desc">An informal coalition of nonprofits and donors asking Jewish Communal Fund to adopt DAFpay and accept Chariot Deposit Account ACH linkages.</div>
+        <div class="site-footer-title">Nonprofits for JCF Connectivity</div>
+        <div class="site-footer-desc">An informal coalition of nonprofits asking Jewish Communal Fund to accept Chariot Deposit Account ACH linkages.</div>
       </div>
       <div class="site-footer-partner">
         <span>In partnership with</span>

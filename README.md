@@ -1,8 +1,16 @@
 # Nonprofits for JCF Connectivity
 
-A small, public petition site. Nonprofits sign to say they'd benefit from Jewish
-Communal Fund (JCF) joining DAFpay for 3-click giving and/or allowing ACH
-linkage into a nonprofit's Chariot deposit account for gift processing.
+A small, public petition site. Nonprofits sign to say they'd benefit from
+Jewish Communal Fund (JCF) allowing ACH linkage into a nonprofit's Chariot
+deposit account for gift processing.
+
+> **Note:** as of 2026-09-18 this app was simplified to focus solely on
+> nonprofits + ACH linkage. It previously also supported a donor-facing
+> sign-up flow and a DAFpay ask. That version is fully preserved at the git
+> tag/branch `pre-simplification-donor-dafpay` if it ever needs to come back
+> — nothing was deleted, and the database columns for it (`type`,
+> `wants_dafpay`, `years_as_account_holder`, etc.) are still in the schema,
+> just unused by the current UI.
 
 Stack: Node.js + Express + EJS templates + Postgres. No build step, no
 frontend framework — deliberately minimal so it's easy to host and cheap to

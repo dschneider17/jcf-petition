@@ -31,9 +31,8 @@
       <table class="admin-table">
         <thead>
           <tr>
-            <th>Nonprofit / Donor</th>
+            <th>Nonprofit</th>
             <th>Contact</th>
-            <th>Asks</th>
             <th>Status</th>
             <th>Submitted</th>
             <th>Actions</th>
@@ -44,7 +43,7 @@
             <tr>
               <td>
                 <div class="admin-name"><%= s.displayNonprofit %></div>
-                <div class="admin-subtext"><%= s.type === 'donor' ? 'JCF Donor' : 'Nonprofit' %><% if (s.anonymous) { %> &middot; anonymous<% } %></div>
+                <div class="admin-subtext"><%= s.type === 'donor' ? 'Legacy JCF Donor entry' : 'Nonprofit' %><% if (s.anonymous) { %> &middot; anonymous<% } %></div>
               </td>
               <td>
                 <% if (s.type === 'donor') { %>
@@ -53,12 +52,6 @@
                   <div><%= s.signer_name || '' %></div>
                   <div class="admin-subtext"><%= s.signer_role || '' %></div>
                 <% } %>
-              </td>
-              <td>
-                <div class="row-actions">
-                  <% if (s.wants_dafpay) { %><span class="badge badge-dafpay">DAFpay</span><% } %>
-                  <% if (s.wants_gift_processing) { %><span class="badge badge-ach">ACH Linkage</span><% } %>
-                </div>
               </td>
               <td><span class="status-pill status-<%= s.status %>"><%= s.status %></span></td>
               <td class="admin-subtext" style="white-space:nowrap;"><%= new Date(s.created_at).toLocaleDateString() %></td>
@@ -85,7 +78,7 @@
             </tr>
           <% }) %>
           <% if (rows.length === 0) { %>
-            <tr><td colspan="6" class="admin-subtext">No submissions in this filter yet.</td></tr>
+            <tr><td colspan="5" class="admin-subtext">No submissions in this filter yet.</td></tr>
           <% } %>
         </tbody>
       </table>

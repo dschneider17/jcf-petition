@@ -4,14 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Nonprofits for JCF Connectivity</title>
-  <meta name="description" content="Nonprofits and donors adding their voice, asking Jewish Communal Fund to support DAFpay and Chariot Gift Processing ACH linkage." />
+  <meta name="description" content="Nonprofits adding their voice, asking Jewish Communal Fund to allow ACH linkage from JCF to a nonprofit's Chariot deposit account for gift processing." />
   <link rel="stylesheet" href="/css/colors_and_type.css" />
   <link rel="stylesheet" href="/css/site.css" />
 </head>
 <body>
 
   <div class="nav-bar">
-    <div class="nav-wordmark"><span id="nav-wordmark-role">Nonprofits</span> <span class="accent">for JCF Connectivity</span></div>
+    <div class="nav-wordmark">Nonprofits <span class="accent">for JCF Connectivity</span></div>
     <div class="nav-actions">
       <a href="/admin/login" class="btn btn-cream">Admin</a>
       <a href="/voices" class="btn btn-navy">See supporters</a>
@@ -23,10 +23,10 @@
       <img src="/img/hero.jpg" alt="" onerror="this.style.display='none'" />
       <div class="hero-scrim"></div>
       <div class="hero-copy">
-        <h1 id="hero-title">JCF&rsquo;s Donors Deserve Faster Giving. So Do We.</h1>
-        <p id="hero-subhead">Jewish Communal Fund&rsquo;s donors already give generously to organizations like ours. We&rsquo;re asking JCF to make that giving faster and easier to manage with Chariot.</p>
+        <h1>Faster, Easier Gift Processing With JCF. So Nonprofits Can Focus on Their Mission.</h1>
+        <p>Jewish Communal Fund&rsquo;s donors already give generously to organizations like ours. We&rsquo;re asking JCF to let approved grants land directly in our Chariot deposit account &mdash; no more manual work on our end.</p>
         <div class="hero-badges">
-          <span class="hero-badge" id="hero-badge-1">Started by nonprofits across the sector</span>
+          <span class="hero-badge">Started by nonprofits across the sector</span>
           <span class="hero-badge">September 2026</span>
         </div>
       </div>
@@ -36,7 +36,7 @@
       <div class="sign-stat-box">
         <div class="sign-stat-num-row">
           <div class="sign-stat-num"><%= counts.total_count %></div>
-          <div class="sign-stat-label">voices and growing</div>
+          <div class="sign-stat-label">nonprofits and growing</div>
         </div>
         <div class="avatar-stack">
           <div class="avatar-stack-inner">
@@ -51,69 +51,26 @@
 
       <% if (!submitted) { %>
         <form method="POST" action="/sign" class="form-stack" id="sign-form">
-          <input type="hidden" name="role" id="role-input" value="<%= role %>" />
-
-          <div class="role-toggle">
-            <button type="button" class="role-tab" id="role-tab-nonprofit" onclick="setRole('nonprofit')">I&rsquo;m a nonprofit</button>
-            <button type="button" class="role-tab" id="role-tab-donor" onclick="setRole('donor')">I&rsquo;m a JCF donor</button>
-          </div>
-
           <% if (error) { %>
             <div class="error-banner"><%= error %></div>
           <% } %>
 
-          <div id="nonprofit-fields">
-            <div class="form-stack">
-              <div class="field">
-                <label for="nonprofit_name">Nonprofit name</label>
-                <input type="text" id="nonprofit_name" name="nonprofit_name" placeholder="e.g. Masbia Soup Kitchen Network" value="<%= formData.nonprofit_name || '' %>" />
-              </div>
-              <div class="field">
-                <label for="signer_name_np">Your name</label>
-                <input type="text" id="signer_name_np" name="signer_name" placeholder="Jane Doe" value="<%= role !== 'donor' ? (formData.signer_name || '') : '' %>" />
-              </div>
-              <div class="field">
-                <label for="signer_role">Your role</label>
-                <input type="text" id="signer_role" name="signer_role" placeholder="Director of Development" value="<%= formData.signer_role || '' %>" />
-              </div>
-              <div class="checkbox-group">
-                <div class="checkbox-group-label">Which Chariot products do you want JCF to support?</div>
-                <label class="checkbox-row">
-                  <input type="checkbox" name="wants_dafpay" <%= formData.wants_dafpay ? 'checked' : '' %> />
-                  <span>DAFpay 3-click giving</span>
-                </label>
-                <label class="checkbox-row">
-                  <input type="checkbox" name="wants_gift_processing" <%= formData.wants_gift_processing ? 'checked' : '' %> />
-                  <span>Chariot Gift Processing (ACH Linkage)</span>
-                </label>
-              </div>
-            </div>
+          <div class="field">
+            <label for="nonprofit_name">Nonprofit name</label>
+            <input type="text" id="nonprofit_name" name="nonprofit_name" placeholder="e.g. Masbia Soup Kitchen Network" value="<%= formData.nonprofit_name || '' %>" />
           </div>
-
-          <div id="donor-fields" style="display:none;">
-            <div class="form-stack">
-              <div class="field">
-                <label for="signer_name_donor">Your name</label>
-                <input type="text" id="signer_name_donor" name="signer_name_donor_display" placeholder="Jane Doe" value="<%= role === 'donor' ? (formData.signer_name || '') : '' %>" />
-              </div>
-              <div class="field">
-                <label for="years_as_account_holder">How long have you been a JCF account holder?</label>
-                <select id="years_as_account_holder" name="years_as_account_holder">
-                  <option value="">Select one</option>
-                  <% ['Less than 1 year','1-5 years','5-10 years','Greater than 10 years'].forEach(function(opt) { %>
-                    <option value="<%= opt %>" <%= formData.years_as_account_holder === opt ? 'selected' : '' %>><%= opt %></option>
-                  <% }) %>
-                </select>
-              </div>
-            </div>
+          <div class="field">
+            <label for="signer_name">Your name</label>
+            <input type="text" id="signer_name" name="signer_name" placeholder="Jane Doe" value="<%= formData.signer_name || '' %>" />
+          </div>
+          <div class="field">
+            <label for="signer_role">Your role</label>
+            <input type="text" id="signer_role" name="signer_role" placeholder="Director of Development" value="<%= formData.signer_role || '' %>" />
           </div>
 
           <div class="field">
-            <label for="why">
-              <span id="why-label-np">Why does this matter to your nonprofit?</span>
-              <span id="why-label-donor" style="display:none;">Tell us why this matters to you as a JCF account holder</span>
-            </label>
-            <textarea id="why" name="why" rows="5" placeholder="Tell JCF what this would mean."><%= formData.why || '' %></textarea>
+            <label for="why">Why does this matter to your nonprofit?</label>
+            <textarea id="why" name="why" rows="5" placeholder="Tell JCF what ACH linkage would mean for your gift processing."><%= formData.why || '' %></textarea>
           </div>
 
           <label class="checkbox-row anon-row">
@@ -123,55 +80,6 @@
 
           <button type="submit" class="btn btn-glacier btn-block">Add my voice</button>
         </form>
-
-        <script>
-          // Keep the two "your name" inputs (nonprofit / donor) mirrored into one
-          // field on submit, since only one field set is visible/relevant at a time.
-          document.getElementById('sign-form').addEventListener('submit', function () {
-            var role = document.getElementById('role-input').value;
-            if (role === 'donor') {
-              var donorName = document.getElementById('signer_name_donor').value;
-              document.getElementById('signer_name_np').value = donorName;
-            }
-          });
-
-          var ROLE_COPY = {
-            nonprofit: {
-              navWordmark: 'Nonprofits',
-              heroTitle: 'JCF’s Donors Deserve Faster Giving. So Do We.',
-              heroSubhead: 'Jewish Communal Fund’s donors already give generously to organizations like ours. We’re asking JCF to make that giving faster and easier to manage with Chariot.',
-              heroBadge: 'Started by nonprofits across the sector',
-              mattersBody: 'Today, JCF grants can only be made through its portal, with no easy way for donors to give at the point of inspiration and no feedback loop back to the nonprofit. And once a grant is approved, nonprofits can’t receive it electronically into their Chariot deposit account — it adds manual work to gift processing and financial reconciliation. Two small changes from JCF would fix both.'
-            },
-            donor: {
-              navWordmark: 'Donors',
-              heroTitle: 'Giving Through JCF Should Take Three Clicks.',
-              heroSubhead: 'You already support nonprofits like these through your JCF fund. We’re asking JCF to bring DAFpay’s 3-click giving so you can give the moment you’re moved to.',
-              heroBadge: 'Started by JCF donors across the sector',
-              mattersBody: 'Today, making a grant from your JCF fund means logging into a portal and filling out a form — often days after you decided to give, with no confirmation back to the nonprofit you’re supporting. DAFpay would let you complete that gift in three clicks, right when you’re moved to give.'
-            }
-          };
-
-          function setRole(role) {
-            document.getElementById('role-input').value = role;
-            document.getElementById('role-tab-nonprofit').classList.toggle('active', role === 'nonprofit');
-            document.getElementById('role-tab-donor').classList.toggle('active', role === 'donor');
-            document.getElementById('nonprofit-fields').style.display = role === 'nonprofit' ? '' : 'none';
-            document.getElementById('donor-fields').style.display = role === 'donor' ? '' : 'none';
-            document.getElementById('why-label-np').style.display = role === 'nonprofit' ? '' : 'none';
-            document.getElementById('why-label-donor').style.display = role === 'donor' ? '' : 'none';
-
-            var copy = ROLE_COPY[role];
-            document.getElementById('nav-wordmark-role').textContent = copy.navWordmark;
-            document.getElementById('hero-title').textContent = copy.heroTitle;
-            document.getElementById('hero-subhead').textContent = copy.heroSubhead;
-            document.getElementById('hero-badge-1').textContent = copy.heroBadge;
-            var mattersBodyEl = document.getElementById('matters-body');
-            if (mattersBodyEl) mattersBodyEl.textContent = copy.mattersBody;
-          }
-
-          setRole('<%= role %>');
-        </script>
       <% } else { %>
         <div class="thankyou">
           <div class="thankyou-check">&check;</div>
@@ -185,14 +93,9 @@
   <div class="matters-card">
     <div class="matters-card-inner">
       <h2>Why this <span class="accent">matters.</span></h2>
-      <p id="matters-body">Today, JCF grants can only be made through its portal, with no easy way for donors to give at the point of inspiration and no feedback loop back to the nonprofit. And once a grant is approved, nonprofits can&rsquo;t receive it electronically into their Chariot deposit account &mdash; it adds manual work to gift processing and financial reconciliation. Two small changes from JCF would fix both.</p>
+      <p>Today, once a JCF grant is approved, nonprofits can&rsquo;t receive it electronically into their Chariot deposit account &mdash; it adds manual work to gift processing and financial reconciliation. One small change from JCF would fix that.</p>
 
       <div class="info-grid">
-        <div class="info-card">
-          <div class="eyebrow">For donors</div>
-          <h3>DAFpay</h3>
-          <p>DAFpay lets a donor complete a JCF grant recommendation in three clicks, right from the donation page &mdash; the same way they&rsquo;d give with a card.</p>
-        </div>
         <div class="info-card navy-top">
           <div class="eyebrow">For nonprofits</div>
           <h3>ACH linkage</h3>
@@ -203,8 +106,8 @@
   </div>
 
   <div class="voices-section" id="voices">
-    <h2>Nonprofits and donors are speaking up.</h2>
-    <p class="subhead">What JCF&rsquo;s donors and grant recipients are telling us these changes would mean to them.</p>
+    <h2>Nonprofits are speaking up.</h2>
+    <p class="subhead">What JCF&rsquo;s grant recipients are telling us this change would mean to them.</p>
 
     <% if (teaserSigners.length === 0) { %>
       <p class="subhead">Be the first to add your voice above.</p>
@@ -213,10 +116,7 @@
         <% teaserSigners.forEach(function(s) { %>
           <div class="voice-card">
             <div class="voice-badges">
-              <% if (s.isDonorType) { %><span class="badge badge-donor">JCF Donor</span><% } %>
-              <% if (s.isNonprofitType) { %><span class="badge badge-nonprofit">Nonprofit</span><% } %>
-              <% if (s.wants_dafpay) { %><span class="badge badge-dafpay">DAFpay</span><% } %>
-              <% if (s.wants_gift_processing) { %><span class="badge badge-ach">ACH Linkage</span><% } %>
+              <span class="badge badge-ach">ACH Linkage</span>
             </div>
             <p class="voice-quote">&ldquo;<%= s.blurb %>&rdquo;</p>
             <div class="voice-identity">
@@ -244,8 +144,8 @@
   <div class="site-footer">
     <div class="site-footer-inner">
       <div>
-        <div class="site-footer-title">Nonprofits and Donors for JCF Connectivity</div>
-        <div class="site-footer-desc">An informal coalition of nonprofits and donors asking Jewish Communal Fund to adopt DAFpay and accept Chariot Deposit Account ACH linkages.</div>
+        <div class="site-footer-title">Nonprofits for JCF Connectivity</div>
+        <div class="site-footer-desc">An informal coalition of nonprofits asking Jewish Communal Fund to accept Chariot Deposit Account ACH linkages.</div>
       </div>
       <div class="site-footer-partner">
         <span>In partnership with</span>
