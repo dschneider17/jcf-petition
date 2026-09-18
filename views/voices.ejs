@@ -19,22 +19,12 @@
   </div>
 
   <div class="wrap">
-    <div class="stat-row">
-      <div class="stat-tile">
-        <div class="num"><%= counts.total_count %></div>
-        <div class="label">nonprofits signed</div>
-      </div>
-    </div>
-
     <% if (approvedSigners.length === 0) { %>
       <p class="subhead" style="padding-bottom:80px;">No supporter voices yet &mdash; be the first.</p>
     <% } else { %>
       <div class="voice-grid" style="padding-bottom:80px;">
         <% approvedSigners.forEach(function(s) { %>
           <div class="voice-card">
-            <div class="voice-badges">
-              <span class="badge badge-ach">ACH Linkage</span>
-            </div>
             <p class="voice-quote">&ldquo;<%= s.blurb %>&rdquo;</p>
             <% if (s.mission_statement) { %>
               <div class="voice-mission"><%= s.mission_statement %></div>
